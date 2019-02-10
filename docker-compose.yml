@@ -10,6 +10,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=password
     volumes:
       - grafana:/var/lib/grafana
+    depends_on:
+      - influxdb
 
   influxdb:
     image: influxdb:1.7
@@ -29,7 +31,28 @@ services:
       - PARTICLE_PASSWORD=${PARTICLE_PASSWORD}
     volumes:
       - ./particle:/app
+    depends_on:
+      - influxdb
+
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - mosquitto:/mosquitto/data
+      - ./mosquitto/config:/mosquitto/config
+
+  mqtt:
+    build:
+      context: ./mqtt
+    volumes:
+      - ./mqtt:/app
+    depends_on:
+      - influxdb
+      - mosquitto
 
 volumes:
   influxdb:
   grafana:
+  mosquitto:
