@@ -3,9 +3,7 @@
 
 #### Setup
 
-1. create particle env vars per `docker-compose.yml`
-1. `docker-compose build`
-1. `docker-compose run --rm particle login`
+1. create particle env vars per `docker-compose.yml`, change any user/passwords
 1. `docker-compose up`
 1. `curl -XPOST 'http://localhost:8086/query' --data-urlencode 'q=CREATE DATABASE "main"'`
 1. http://localhost:3000 `admin`:`password` (specified in docker-compose.yml)
