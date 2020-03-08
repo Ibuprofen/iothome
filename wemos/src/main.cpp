@@ -3,9 +3,7 @@
 #include <PubSubClient.h>
 #include <OneWire.h>
 #include <DS18B20.h>
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
-#include <DHT_U.h>
+#include <WEMOS_SHT3X.h>
 
 const char *ssid = "";
 const char *password = "";
@@ -19,31 +17,27 @@ const char *deviceid = "w003";
 OneWire oneWire(ONE_WIRE_BUS);
 DS18B20 DSsensor(&oneWire);
 
+SHT3X sht30(0x45);
+
 const int MAXRETRY = 4;
 const uint32_t msSAMPLE_INTERVAL = 2500;
 const uint32_t msMETRIC_PUBLISH = 30000;
 
-double DHTcelsius;
 double DScelsius;
-double DHTfahrenheit;
 double DSfahrenheit;
-double DHThumidity;
+float SHTcelsius;
+float SHTfahrenheit;
+float SHThumidity;
 uint32_t msLastMetric;
 uint32_t msLastSample;
 
 PubSubClient client(espClient);
 char msg[128];
 
-#define DHTPIN D3     // Digital pin connected to the DHT sensor 
-
-// Uncomment the type of sensor in use:
-//#define DHTTYPE    DHT11     // DHT 11
-#define DHTTYPE    DHT22     // DHT 22 (AM2302)
-//#define DHTTYPE    DHT21     // DHT 21 (AM2301)
-
-DHT_Unified dht(DHTPIN, DHTTYPE);
-
 void setupWifi() {
+  // in case this device used to be a softAP, clear it
+  WiFi.softAPdisconnect();
+
   delay(3000);
   // We start by connecting to a WiFi network
   Serial.println();
@@ -89,54 +83,17 @@ void reconnect() {
   }
 }
 
-void setupDHT() {
-  dht.begin();
-  Serial.println(F("DHTxx Unified Sensor"));
-  // Print temperature sensor details.
-  sensor_t DHTsensor;
-  dht.temperature().getSensor(&DHTsensor);
-  Serial.println(F("------------------------------------"));
-  Serial.println(F("Temperature Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(DHTsensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(DHTsensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(DHTsensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(DHTsensor.max_value); Serial.println(F("°C"));
-  Serial.print  (F("Min Value:   ")); Serial.print(DHTsensor.min_value); Serial.println(F("°C"));
-  Serial.print  (F("Resolution:  ")); Serial.print(DHTsensor.resolution); Serial.println(F("°C"));
-  Serial.println(F("------------------------------------"));
-  // Print humidity sensor details.
-  dht.humidity().getSensor(&DHTsensor);
-  Serial.println(F("Humidity Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(DHTsensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(DHTsensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(DHTsensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(DHTsensor.max_value); Serial.println(F("%"));
-  Serial.print  (F("Min Value:   ")); Serial.print(DHTsensor.min_value); Serial.println(F("%"));
-  Serial.print  (F("Resolution:  ")); Serial.print(DHTsensor.resolution); Serial.println(F("%"));
-  Serial.println(F("------------------------------------"));
-}
+void readSHT() {
+  if (sht30.get() == 0) {
+    SHTcelsius = sht30.cTemp;
+    SHTfahrenheit = sht30.fTemp;
+    SHThumidity = sht30.humidity;
 
-void readDHT() {
-  // Get temperature event and print its value.
-  sensors_event_t DHTevent;
-  dht.temperature().getEvent(&DHTevent);
-  if (isnan(DHTevent.temperature)) {
-    Serial.println(F("Error reading temperature!"));
+    Serial.print("SHT C: "); Serial.print(SHTcelsius); Serial.print(" F: "); Serial.print(SHTfahrenheit);
+    Serial.print(" H: "); Serial.println(sht30.humidity);
   } else {
-    DHTcelsius = DHTevent.temperature;
-    DHTfahrenheit = DHTcelsius * 9 / 5 + 32;
-    Serial.print("DHT C: "); Serial.print(DHTcelsius); Serial.print(" F: "); Serial.print(DHTfahrenheit);
+    Serial.println("Error reading SHT sensor");
   }
-  // Get humidity event and print its value.
-  dht.humidity().getEvent(&DHTevent);
-  if (isnan(DHTevent.relative_humidity)) {
-    Serial.println(F("Error reading humidity!"));
-  } else {
-    Serial.print(" Hum: ");
-    DHThumidity = DHTevent.relative_humidity; 
-    Serial.print(DHThumidity);
-    Serial.println("%");
-  }  
 }
 
 void readDS() {
@@ -159,7 +116,8 @@ void setup(void) {
 
   DSsensor.begin();
 
-  setupDHT();
+  Serial.println("");
+  Serial.print("Device ID: "); Serial.println(deviceid);
 }
 
 void loop(void) {
@@ -172,16 +130,17 @@ void loop(void) {
   if (millis() - msLastSample >= msSAMPLE_INTERVAL) {
     msLastSample = millis();
     readDS();
-    readDHT();
+    readSHT();
+    Serial.println();
   }
 
   if (millis() - msLastMetric >= msMETRIC_PUBLISH) {
     msLastMetric = millis();
 
-    if (!DHTfahrenheit || !DHThumidity) {
+    if (!SHTfahrenheit || !SHThumidity) {
       sprintf(msg, "weather,deviceid=%s tempf_02=%.2f", deviceid, DSfahrenheit);
     } else {
-      sprintf(msg, "weather,deviceid=%s tempf_01=%.2f,tempf_02=%.2f,hum_01=%.2f", deviceid, DHTfahrenheit, DSfahrenheit, DHThumidity);
+      sprintf(msg, "weather,deviceid=%s tempf_01=%.2f,tempf_02=%.2f,hum_01=%.2f", deviceid, SHTfahrenheit, DSfahrenheit, SHThumidity);
     }
     Serial.print("Publish message: ");
     Serial.println(msg);
