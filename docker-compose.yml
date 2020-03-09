@@ -12,6 +12,7 @@ services:
       - grafana:/var/lib/grafana
     depends_on:
       - influxdb
+    restart: unless-stopped
 
   influxdb:
     image: influxdb:1.7
@@ -22,6 +23,7 @@ services:
       - ./influxdb/.influxdb.env
     volumes:
       - influxdb:/var/lib/influxdb
+    restart: unless-stopped
 
   particle:
     build:
@@ -33,6 +35,7 @@ services:
       - ./particle:/app
     depends_on:
       - influxdb
+    restart: unless-stopped
 
   mosquitto:
     image: eclipse-mosquitto:latest
@@ -42,6 +45,7 @@ services:
     volumes:
       - mosquitto:/mosquitto/data
       - ./mosquitto/config:/mosquitto/config
+    restart: unless-stopped
 
   mqtt:
     build:
@@ -51,6 +55,7 @@ services:
     depends_on:
       - influxdb
       - mosquitto
+    restart: unless-stopped
 
 volumes:
   influxdb:
