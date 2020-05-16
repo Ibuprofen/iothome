@@ -12,6 +12,7 @@ services:
       - grafana:/var/lib/grafana
     depends_on:
       - influxdb
+    restart: unless-stopped
 
   influxdb:
     image: influxdb:1.7
@@ -22,10 +23,12 @@ services:
       - ./influxdb/.influxdb.env
     volumes:
       - influxdb:/var/lib/influxdb
+    restart: unless-stopped
 
   particle:
-    build:
-      context: ./particle
+    image: node:13-alpine
+    working_dir: /app
+    command: npm start
     environment:
       - PARTICLE_USERNAME=${PARTICLE_USERNAME}
       - PARTICLE_PASSWORD=${PARTICLE_PASSWORD}
@@ -33,6 +36,7 @@ services:
       - ./particle:/app
     depends_on:
       - influxdb
+    restart: unless-stopped
 
   mosquitto:
     image: eclipse-mosquitto:latest
@@ -42,19 +46,23 @@ services:
     volumes:
       - mosquitto:/mosquitto/data
       - ./mosquitto/config:/mosquitto/config
+    restart: unless-stopped
 
   mqtt:
-    build:
-      context: ./mqtt
+    image: node:13-alpine
+    working_dir: /app
+    command: npm start
     volumes:
       - ./mqtt:/app
     depends_on:
       - influxdb
       - mosquitto
+    restart: unless-stopped
 
   tempest:
-    build:
-      context: ./tempest
+    image: node:13-alpine
+    working_dir: /app
+    command: npm start
     environment:
       - WF_API_KEY=a8f5dbda-af0a-4b57-99b9-f10baa88f27b
       - DEVICE_ID=62760

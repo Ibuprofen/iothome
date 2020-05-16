@@ -11,6 +11,10 @@
 1. create Dashboard
 1. create Charts
 
+Node based services need the modules installed:
+
+1. `docker-compose run --rm tempest|particle|mqtt install`
+
 #### Normal Operation
 
 * `docker-compose up`
