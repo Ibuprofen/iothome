@@ -30,6 +30,7 @@ server.on('message', (msg, rinfo) => {
         ['tempf_01', cToF(obs[7])],
         ['hum_01', obs[8]],
         ['illum', obs[9]],
+        ['uv', obs[10]],
         ['solrad', obs[11]],
         ['batv', obs[16]],
       ], obs[0]);
