@@ -63,8 +63,10 @@ services:
     image: node:13-alpine
     working_dir: /app
     command: npm start
+    ports:
+      - "50222:50222/udp"
     environment:
-      - WF_API_KEY=a8f5dbda-af0a-4b57-99b9-f10baa88f27b
+      - UDP_PORT=50222
       - DEVICE_ID=62760
     volumes:
       - ./tempest:/app
