@@ -10,6 +10,13 @@ function cToF(celsius, digits = 2) {
   }
 }
 
+function mbarToHg(mbar, digits = 2) {
+  if (typeof mbar === "number") {
+    const result = mbar / 33.8639;
+    return Number.parseFloat(result).toFixed(digits);
+  }
+}
+
 function logEvent(measurement, tags, fields, unix_time) {
   const unixTimeNs = `${new Date(unix_time * 1000).getTime()}000000`
   const tagStr = tags.map(arr => arr.join('=')).join(',')
@@ -42,4 +49,4 @@ function logEvent(measurement, tags, fields, unix_time) {
   req.end()
 }
 
-module.exports = { logEvent, cToF }
+module.exports = { logEvent, cToF, mbarToHg }
