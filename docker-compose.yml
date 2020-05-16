@@ -52,6 +52,18 @@ services:
       - influxdb
       - mosquitto
 
+  tempest:
+    build:
+      context: ./tempest
+    environment:
+      - WF_API_KEY=a8f5dbda-af0a-4b57-99b9-f10baa88f27b
+      - DEVICE_ID=62760
+    volumes:
+      - ./tempest:/app
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+
 volumes:
   influxdb:
   grafana:
