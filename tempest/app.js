@@ -1,6 +1,6 @@
 const dgram = require('dgram')
 const server = dgram.createSocket('udp4')
-const { logEvent, cToF, mbarToHg } = require('./utils.js')
+const { logEvent, cToF, mbarToHg, kmToMiles, mmToIn } = require('./utils.js')
 
 const deviceId = process.env.DEVICE_ID;
 
@@ -18,10 +18,11 @@ server.on('message', (msg, rinfo) => {
 
   try {
     const data = JSON.parse(msg);
+
+    // general observation data
     if (data.type === 'obs_st') {
       // UDP values at https://weatherflow.github.io/SmartWeather/api/udp/v119/
       const obs = data.obs[0];
-
       logEvent('weather', [
         ['deviceid', `tempest${deviceId}`],
         ['location', 'outdoor'],
@@ -32,9 +33,34 @@ server.on('message', (msg, rinfo) => {
         ['illum', obs[9]],
         ['uv', obs[10]],
         ['solrad', obs[11]],
+        ['precipaccum', mmToIn(obs[12])],
         ['batv', obs[16]],
       ], obs[0]);
     }
+
+    // rain start event
+    if (data.type === 'evt_precip') {
+      const evt = data.evt;
+      logEvent('weather', [
+        ['deviceid', `tempest${deviceId}`],
+        ['location', 'outdoor'],
+      ], [
+        ['precipstart', 1],
+      ], evt[0]);
+    }
+
+    // lightning
+    if (data.type === 'evt_strike') {
+      const evt = data.evt;
+      logEvent('weather', [
+        ['deviceid', `tempest${deviceId}`],
+        ['location', 'outdoor'],
+      ], [
+        ['ltgdist', kmToMiles(evt[1])],
+        ['ltgenergy', evt[2]],
+      ], evt[0]);
+    }
+
   } catch (error) {
     console.error(error);
   }

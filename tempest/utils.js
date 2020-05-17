@@ -3,18 +3,24 @@ const http = require('http')
 // send over to influxdb
 // curl -i -XPOST "http://localhost:8086/write?db=main" --data-binary 'weather,deviceid=170032000747343339373536 tempf=67.10 1548533672746000000000'
 
-function cToF(celsius, digits = 2) {
-  if (typeof celsius === "number") {
-    const result = celsius * 1.8 + 32;
-    return Number.parseFloat(result).toFixed(digits);
-  }
+const isNum = (n) => typeof n === "number";
+const parseFixed = (n, digits = 2) => Number.parseFloat(n).toFixed(digits);
+const calc = (n) => isNum(n) ? parseFixed(n) : NaN;
+
+function cToF(celcius) {
+  return calc(celcius * 1.8 + 32)
 }
 
-function mbarToHg(mbar, digits = 2) {
-  if (typeof mbar === "number") {
-    const result = mbar / 33.8639;
-    return Number.parseFloat(result).toFixed(digits);
-  }
+function mbarToHg(mbar) {
+  return calc(mbar / 33.8639)
+}
+
+function kmToMiles(km) {
+  return calc(km * 0.62137)
+}
+
+function mmToIn(mm) {
+  return calc(mm / 25.4)
 }
 
 function logEvent(measurement, tags, fields, unix_time) {
@@ -49,4 +55,4 @@ function logEvent(measurement, tags, fields, unix_time) {
   req.end()
 }
 
-module.exports = { logEvent, cToF, mbarToHg }
+module.exports = { logEvent, cToF, mbarToHg, kmToMiles, mmToIn }
