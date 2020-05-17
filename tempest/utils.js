@@ -7,21 +7,10 @@ const isNum = (n) => typeof n === "number";
 const parseFixed = (n, digits = 2) => Number.parseFloat(n).toFixed(digits);
 const calc = (n) => isNum(n) ? parseFixed(n) : NaN;
 
-function cToF(celcius) {
-  return calc(celcius * 1.8 + 32)
-}
-
-function mbarToHg(mbar) {
-  return calc(mbar / 33.8639)
-}
-
-function kmToMiles(km) {
-  return calc(km * 0.62137)
-}
-
-function mmToIn(mm) {
-  return calc(mm / 25.4)
-}
+const cToF = celcius => calc(celcius * 1.8 + 32);
+const mbarToHg = mbar => calc(mbar / 33.8639);
+const kmToMiles = km => calc(km * 0.62137);
+const mmToIn = mm => calc(mm / 25.4);
 
 function logEvent(measurement, tags, fields, unix_time) {
   const unixTimeNs = `${new Date(unix_time * 1000).getTime()}000000`
