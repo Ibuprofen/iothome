@@ -34,6 +34,8 @@ server.on('message', (msg, rinfo) => {
         ['uv', obs[10]],
         ['solrad', obs[11]],
         ['precipaccum', mmToIn(obs[12])],
+        ['ltgavgdist', kmToMiles(obs[14])],
+        ['ltgcnt', obs[15]],
         ['batv', obs[16]],
       ], obs[0]);
     }
