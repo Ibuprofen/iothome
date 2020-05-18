@@ -22,26 +22,26 @@ function logEvent(measurement, tags, fields, unix_time) {
   // weather,deviceid=001 tempf=50 <largenumber>
   const line = `${measurement},${tagStr} ${fieldStr} ${unixTimeNs}`
 
-  // const req = http.request({
-  //   hostname: 'influxdb',
-  //   port: 8086,
-  //   path: '/write?db=main',
-  //   method: 'POST',
-  // }, (res) => {
-  //   res.setEncoding('utf8')
-  //   res.on('data', (body) => {
-  //     console.log(body)
-  //   })
-  // })
+  const req = http.request({
+    hostname: 'influxdb',
+    port: 8086,
+    path: '/write?db=main',
+    method: 'POST',
+  }, (res) => {
+    res.setEncoding('utf8')
+    res.on('data', (body) => {
+      console.log(body)
+    })
+  })
 
-  // req.on('error', (e) => {
-  //   console.log(`problem with request: ${e}`)
-  // })
+  req.on('error', (e) => {
+    console.log(`problem with request: ${e}`)
+  })
 
-  // // write data to request body
+  // write data to request body
   console.log('writing', line)
-  // req.write(line)
-  // req.end()
+  req.write(line)
+  req.end()
 }
 
 module.exports = { logEvent, cToF, mbarToHg, kmToMiles, mmToIn }
