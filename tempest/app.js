@@ -63,6 +63,17 @@ server.on('message', (msg, rinfo) => {
       ], evt[0]);
     }
 
+    // device status
+    if (data.type === 'device_status') {
+      logEvent('weather', [
+        ['deviceid', `tempest${deviceId}`],
+        ['location', 'outdoor'],
+      ], [
+        ['rssi', data.rssi],
+        ['hub_rssi', data.hub_rssi],
+        ['uptime', data.uptime],
+      ], data.timestamp);
+    }
   } catch (error) {
     console.error(error);
   }

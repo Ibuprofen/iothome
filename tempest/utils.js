@@ -22,6 +22,8 @@ function logEvent(measurement, tags, fields, unix_time) {
   // weather,deviceid=001 tempf=50 <largenumber>
   const line = `${measurement},${tagStr} ${fieldStr} ${unixTimeNs}`
 
+  console.log('writing', line)
+
   const req = http.request({
     hostname: 'influxdb',
     port: 8086,
@@ -39,7 +41,6 @@ function logEvent(measurement, tags, fields, unix_time) {
   })
 
   // write data to request body
-  console.log('writing', line)
   req.write(line)
   req.end()
 }
