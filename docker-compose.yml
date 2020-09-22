@@ -25,19 +25,6 @@ services:
       - influxdb:/var/lib/influxdb
     restart: unless-stopped
 
-  particle:
-    image: node:13-alpine
-    working_dir: /app
-    command: npm start
-    environment:
-      - PARTICLE_USERNAME=${PARTICLE_USERNAME}
-      - PARTICLE_PASSWORD=${PARTICLE_PASSWORD}
-    volumes:
-      - ./particle:/app
-    depends_on:
-      - influxdb
-    restart: unless-stopped
-
   mosquitto:
     image: eclipse-mosquitto:latest
     ports:
@@ -48,15 +35,44 @@ services:
       - ./mosquitto/config:/mosquitto/config
     restart: unless-stopped
 
+  ##
+  # NodeJs
+  ##
+
+  aqi:
+    image: node:13-alpine
+    working_dir: /app
+    command: npm start
+    environment:
+      - DEVICE_ID=14347
+    volumes:
+      - ./node/aqi:/app
+    depends_on:
+      - influxdb
+    restart: unless-stopped
+
   mqtt:
     image: node:13-alpine
     working_dir: /app
     command: npm start
     volumes:
-      - ./mqtt:/app
+      - ./node/mqtt:/app
     depends_on:
       - influxdb
       - mosquitto
+    restart: unless-stopped
+
+  particle:
+    image: node:13-alpine
+    working_dir: /app
+    command: npm start
+    environment:
+      - PARTICLE_USERNAME=${PARTICLE_USERNAME}
+      - PARTICLE_PASSWORD=${PARTICLE_PASSWORD}
+    volumes:
+      - ./node/particle:/app
+    depends_on:
+      - influxdb
     restart: unless-stopped
 
   tempest:
@@ -69,7 +85,7 @@ services:
       - UDP_PORT=50222
       - DEVICE_ID=62760
     volumes:
-      - ./tempest:/app
+      - ./node/tempest:/app
     depends_on:
       - influxdb
     restart: unless-stopped
