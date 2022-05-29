@@ -7,18 +7,23 @@ process.on('SIGINT', () => {
 })
 
 const delay = 60000; // milliseconds
-const deviceId = process.env.DEVICE_ID
-const url = `https://www.purpleair.com/json?show=${deviceId}`
+const sensorIndex = process.env.PURPLE_AIR_SENSOR_INDEX
+const apiKey = process.env.PURPLE_AIR_API_KEY
+const url = `https://api.purpleair.com/v1/sensors/${sensorIndex}?api_key=${apiKey}`
 
 const interval = async () => {
 
   try {
     const response = await fetch(url)
+
+    console.log(response.status, response.statusText);
+
     const data = await response.json()
 
-    if (data.results.length) {
-      const pm25Values = data.results.map(d => Number(d.PM2_5Value))
-      const pm25 = avg(pm25Values)
+    if (data?.sensor) {
+      const pm25_a = data?.sensor?.['pm2.5_a'] || 0
+      const pm25_b = data?.sensor?.['pm2.5_b'] || 0
+      const pm25 = avg([pm25_a, pm25_b])
       const aqi = pm25toAQI(pm25)
 
       const unixTime = Math.floor(+new Date() / 1000)
@@ -26,7 +31,7 @@ const interval = async () => {
       if (isNum(pm25)) {
 
         logEvent('weather', [
-          ['deviceid', `purpleair${deviceId}`],
+          ['deviceid', `purpleair${sensorIndex}`],
           ['location', 'outdoor'],
         ], [
           ['pm25', pm25],

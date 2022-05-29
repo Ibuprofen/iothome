@@ -40,11 +40,12 @@ services:
   ##
 
   aqi:
-    image: node:13-alpine
+    image: node:14-alpine
     working_dir: /app
     command: npm start
     environment:
-      - DEVICE_ID=14347
+      - PURPLE_AIR_SENSOR_INDEX=${PURPLE_AIR_SENSOR_INDEX}
+      - PURPLE_AIR_API_KEY=${PURPLE_AIR_API_KEY}
     volumes:
       - ./node/aqi:/app
     depends_on:
@@ -52,7 +53,7 @@ services:
     restart: unless-stopped
 
   mqtt:
-    image: node:13-alpine
+    image: node:14-alpine
     working_dir: /app
     command: npm start
     volumes:
@@ -63,7 +64,7 @@ services:
     restart: unless-stopped
 
   particle:
-    image: node:13-alpine
+    image: node:14-alpine
     working_dir: /app
     command: npm start
     environment:
