@@ -1,4 +1,4 @@
-const http = require('http')
+import http from 'http'
 
 // send over to influxdb
 // curl -i -XPOST "http://localhost:8086/write?db=main" --data-binary 'weather,deviceid=170032000747343339373536 tempf=67.10 1548533672746000000000'
@@ -26,4 +26,4 @@ function logEvent(str) {
     req.end()
 }
 
-module.exports = { logEvent }
+export { logEvent }

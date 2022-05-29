@@ -1,6 +1,7 @@
-const mqtt = require('mqtt')
+import mqtt from 'mqtt'
+import { logEvent } from './utils.js'
+
 const client  = mqtt.connect('mqtt://mosquitto')
-const { logEvent } = require('./utils.js')
 
 process.on('SIGINT', () => {
   console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" )

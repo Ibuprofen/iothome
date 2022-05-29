@@ -63,18 +63,18 @@ services:
       - mosquitto
     restart: unless-stopped
 
-  particle:
-    image: node:14-alpine
-    working_dir: /app
-    command: npm start
-    environment:
-      - PARTICLE_USERNAME=${PARTICLE_USERNAME}
-      - PARTICLE_PASSWORD=${PARTICLE_PASSWORD}
-    volumes:
-      - ./node/particle:/app
-    depends_on:
-      - influxdb
-    restart: unless-stopped
+  # particle:
+  #   image: node:13-alpine
+  #   working_dir: /app
+  #   command: npm start
+  #   environment:
+  #     - PARTICLE_USERNAME=${PARTICLE_USERNAME}
+  #     - PARTICLE_PASSWORD=${PARTICLE_PASSWORD}
+  #   volumes:
+  #     - ./node/particle:/app
+  #   depends_on:
+  #     - influxdb
+  #   restart: unless-stopped
 
   tempest:
     image: node:13-alpine

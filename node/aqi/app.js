@@ -1,5 +1,5 @@
-const fetch = require('node-fetch')
-const { logEvent, avg, isNum, pm25toAQI } = require('./utils.js')
+import fetch from 'node-fetch'
+import { logEvent, avg, isNum, pm25toAQI } from './utils.js'
 
 process.on('SIGINT', () => {
   console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" )
