@@ -24,8 +24,8 @@ String clientId = "ESP8266Client-";
 PubSubClient client(espClient);
 char msg[128];
 
-#define ONE_WIRE_BUSA  2
-#define ONE_WIRE_BUSB  3
+#define ONE_WIRE_BUSA  D1
+#define ONE_WIRE_BUSB  D2
 
 OneWire oneWireA(ONE_WIRE_BUSA);
 OneWire oneWireB(ONE_WIRE_BUSB);
@@ -40,8 +40,7 @@ void readDS();
 void setup() {
   delay(3000);
 
-  Serial.begin(115200);
-  Serial.println(__FILE__);
+  Serial.begin(9600);
   Serial.print("DS18B20 Library version: ");
   Serial.println(DS18B20_LIB_VERSION);
 
@@ -51,6 +50,15 @@ void setup() {
 
   liquidSensor.begin();
   gasSensor.begin();
+
+  // 9 is default
+  if (!liquidSensor.setResolution(9)) {
+    Serial.println("No liquidSensor found");
+  };
+
+  if (!gasSensor.setResolution(9)) {
+    Serial.println("No gasSensor found");
+  };
 
   liquidSensor.requestTemperatures();
   gasSensor.requestTemperatures();
@@ -70,12 +78,17 @@ void loop() {
   if (millis() - msLastMetric >= msMETRIC_PUBLISH) {
     msLastMetric = millis();
 
-    if (liquidF && gasF) {
+    if ((liquidF > 0 && gasF > 0) && (liquidF < 185 && gasF < 185)) {
       sprintf(msg, "weather,deviceid=%s tempf_01=%.2f,tempf_02=%.2f", deviceid, liquidF, gasF);
+      Serial.print("Publish message: ");
+      Serial.println(msg);
+      client.publish("event", msg);
+    } else {
+      Serial.print("liquidSensor: ");
+      Serial.print(liquidF); Serial.print(" ");
+      Serial.print("gasSensor: ");
+      Serial.println(gasF);
     }
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    client.publish("event", msg);
   }
   
   delay(100);
@@ -129,20 +142,16 @@ void reconnectMqtt() {
 void readDS() {
   // print the temperature when available and request a new reading
   if (liquidSensor.isConversionComplete()) {
-    Serial.print("liquidSensor:\t");
-    Serial.println(liquidSensor.getTempC(),1);
-    liquidSensor.requestTemperatures();
     liquidC = liquidSensor.getTempC();
     liquidF = liquidC * 9 / 5 + 32;
-    Serial.print("liquid C: "); Serial.print(liquidC); Serial.print(" F: "); Serial.println(liquidF);
+    Serial.print("liquid\tC: "); Serial.print(liquidC); Serial.print(" F: "); Serial.println(liquidF);
+    liquidSensor.requestTemperatures();
   }
 
   if (gasSensor.isConversionComplete()) {
-    Serial.print("gasSensor:\t\t");
-    Serial.println(gasSensor.getTempC(),1);
-    gasSensor.requestTemperatures();
     gasC = gasSensor.getTempC();
     gasF = gasC * 9 / 5 + 32;
-    Serial.print("gas C: "); Serial.print(gasC); Serial.print(" F: "); Serial.println(gasF);
+    Serial.print("gas\tC: "); Serial.print(gasC); Serial.print(" F: "); Serial.println(gasF);
+    gasSensor.requestTemperatures();
   }
 }
