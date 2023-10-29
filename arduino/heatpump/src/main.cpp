@@ -12,10 +12,10 @@ const char *deviceid = "w008";
 const uint32_t msSAMPLE_INTERVAL = 2500;
 const uint32_t msMETRIC_PUBLISH = 30000;
 
-double liquidC;
-double liquidF;
-double gasC;
-double gasF;
+double temp01C;
+double temp01F;
+double temp02C;
+double temp02F;
 
 uint32_t msLastMetric;
 uint32_t msLastSample;
@@ -30,8 +30,8 @@ char msg[128];
 OneWire oneWireA(ONE_WIRE_BUSA);
 OneWire oneWireB(ONE_WIRE_BUSB);
 
-DS18B20 liquidSensor(&oneWireA);
-DS18B20 gasSensor(&oneWireB);
+DS18B20 sensorA(&oneWireA);
+DS18B20 sensorB(&oneWireB);
 
 void setupWifi();
 void reconnectMqtt();
@@ -48,20 +48,20 @@ void setup() {
 
   client.setServer(mqtt_server, 1883);  
 
-  liquidSensor.begin();
-  gasSensor.begin();
+  sensorA.begin();
+  sensorB.begin();
 
   // 9 is default
-  if (!liquidSensor.setResolution(9)) {
-    Serial.println("No liquidSensor found");
+  if (!sensorA.setResolution(9)) {
+    Serial.println("No sensorA found");
   };
 
-  if (!gasSensor.setResolution(9)) {
-    Serial.println("No gasSensor found");
+  if (!sensorB.setResolution(9)) {
+    Serial.println("No sensorB found");
   };
 
-  liquidSensor.requestTemperatures();
-  gasSensor.requestTemperatures();
+  sensorA.requestTemperatures();
+  sensorB.requestTemperatures();
 }
 
 void loop() {
@@ -78,16 +78,16 @@ void loop() {
   if (millis() - msLastMetric >= msMETRIC_PUBLISH) {
     msLastMetric = millis();
 
-    if ((liquidF > 0 && gasF > 0) && (liquidF < 185 && gasF < 185)) {
-      sprintf(msg, "weather,deviceid=%s tempf_01=%.2f,tempf_02=%.2f", deviceid, liquidF, gasF);
+    if ((temp01F > 0 && temp02F > 0) && (temp01F < 185 && temp02F < 185)) {
+      sprintf(msg, "weather,deviceid=%s tempf_01=%.2f,tempf_02=%.2f", deviceid, temp01F, temp02F);
       Serial.print("Publish message: ");
       Serial.println(msg);
       client.publish("event", msg);
     } else {
-      Serial.print("liquidSensor: ");
-      Serial.print(liquidF); Serial.print(" ");
-      Serial.print("gasSensor: ");
-      Serial.println(gasF);
+      Serial.print("sensorA: ");
+      Serial.print(temp01F); Serial.print(" ");
+      Serial.print("sensorB: ");
+      Serial.println(temp02F);
     }
   }
   
@@ -141,17 +141,17 @@ void reconnectMqtt() {
 
 void readDS() {
   // print the temperature when available and request a new reading
-  if (liquidSensor.isConversionComplete()) {
-    liquidC = liquidSensor.getTempC();
-    liquidF = liquidC * 9 / 5 + 32;
-    Serial.print("liquid\tC: "); Serial.print(liquidC); Serial.print(" F: "); Serial.println(liquidF);
-    liquidSensor.requestTemperatures();
+  if (sensorA.isConversionComplete()) {
+    temp01C = sensorA.getTempC();
+    temp01F = temp01C * 9 / 5 + 32;
+    Serial.print("liquid\tC: "); Serial.print(temp01C); Serial.print(" F: "); Serial.println(temp01F);
+    sensorA.requestTemperatures();
   }
 
-  if (gasSensor.isConversionComplete()) {
-    gasC = gasSensor.getTempC();
-    gasF = gasC * 9 / 5 + 32;
-    Serial.print("gas\tC: "); Serial.print(gasC); Serial.print(" F: "); Serial.println(gasF);
-    gasSensor.requestTemperatures();
+  if (sensorB.isConversionComplete()) {
+    temp02C = sensorB.getTempC();
+    temp02F = temp02C * 9 / 5 + 32;
+    Serial.print("gas\tC: "); Serial.print(temp02C); Serial.print(" F: "); Serial.println(temp02F);
+    sensorB.requestTemperatures();
   }
 }
